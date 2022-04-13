@@ -14,13 +14,14 @@ class InternetFile {
     InternetFileStorage? storage,
     InternetFileStorageAdditional storageAdditional = const {},
   }) async {
+    var response;
     final completer = Completer<Uint8List>();
     final httpClient = http.Client();
     final request = http.Request('GET', Uri.parse(url));
     if (headers != null) {
       request.headers.addAll(headers);
     }
-    final response = await httpClient.send(request);
+    response = await httpClient.send(request);
 
     List<List<int>> chunks = [];
     int downloaded = 0;
@@ -72,3 +73,4 @@ class InternetFile {
     return completer.future;
   }
 }
+
