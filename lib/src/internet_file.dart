@@ -21,7 +21,10 @@ class InternetFile {
     if (headers != null) {
       request.headers.addAll(headers);
     }
-    response = await httpClient.send(request);
+    response = httpClient.send(request).onError((error, stackTrace) async {
+      completer.completeError('error');
+      throw Exception("internet error");
+    });
 
     List<List<int>> chunks = [];
     int downloaded = 0;
@@ -32,7 +35,6 @@ class InternetFile {
         return localResult;
       }
     }
-
     response.asStream().listen((http.StreamedResponse request) {
       request.stream.listen(
         (List<int> chunk) {
@@ -70,6 +72,7 @@ class InternetFile {
         },
       );
     });
+
     return completer.future;
   }
 }
