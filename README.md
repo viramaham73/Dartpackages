@@ -1,34 +1,118 @@
-# Dart plugins
+<img src="https://raw.githubusercontent.com/rbcprolabs/packages.dart/master/packages/internet_file/media/hero.png" alt="Logo" width="100%" />
+<br />
+<h2 align="center">A internet file getter (also optional downloader) that works in all platforms (browsers, mobile, desktop, and server-side)</h2>
+<br />
+<p align="center">
+  <a href="https://pub.dev/packages/internet_file">
+    <img src="https://img.shields.io/pub/v/internet_file.svg"
+         alt="Pub">
+  </a>
+</p>
 
-Common plugins for dart language 
+<p align="center">
+  <a href="#purpose">Purpose</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="#api">Api</a> •
+  <a href="#credits">Credits</a>
+</p>
 
-## Available plugins
+## Purpose
+The library is made to allow direct access to Internet files on all platforms. 
+It also has the middleware to store files locally if needed. 
+Aimed primarily at use with plugins, without the ability to work with the Internet
 
-| Plugin | Version | Source code |
-|---|---|---|
-| [extension][extension_pub] | ![pub package][extension_badge] | [`packages/extension`][extension_code] |
-| [network][network_pub] | ![pub package][network_badge] | [`packages/network`][network_code] |
-| [register][register_pub] | ![pub package][register_badge] | [`packages/register`][register_code] |
-| [universal_file][universal_file_pub] | ![pub package][universal_file_badge] | [`packages/universal_file`][universal_file_code] |
-| [internet_file][internet_file_pub] | ![pub package][internet_file_badge] | [`packages/internet_file`][internet_file_code] |
+## Getting Started
 
+Simple usage anywhere:
+```dart
+import 'package:internet_file/internet_file.dart';
 
-[extension_pub]: https://pub.dev/packages/extension
-[extension_code]: https://github.com/rbcprolabs/packages.dart/tree/master/packages/extension
-[extension_badge]: https://img.shields.io/pub/v/extension.svg
+final Uint8List bytes = await InternetFile.get(
+    'https://github.com/rbcprolabs/icon_font_generator/raw/master/example/lib/icon_font/ui_icons.ttf',
+    process: (percentage) {
+        print('downloadPercentage: $percentage');
+    },
+);
+```
 
-[network_pub]: https://pub.dev/packages/network
-[network_code]: https://github.com/rbcprolabs/packages.dart/tree/master/packages/network
-[network_badge]: https://img.shields.io/pub/v/network.svg
+For local store files you can usage `InternetFileStorageIO` (not works on web):
+```dart
+import 'package:internet_file/storage_io.dart';
 
-[register_pub]: https://pub.dev/packages/register
-[register_code]: https://github.com/rbcprolabs/packages.dart/tree/master/packages/register
-[register_badge]: https://img.shields.io/pub/v/register.svg
+final storageIO = InternetFileStorageIO();
 
-[universal_file_pub]: https://pub.dev/packages/universal_file
-[universal_file_code]: https://github.com/rbcprolabs/packages.dart/tree/master/packages/universal_file
-[universal_file_badge]: https://img.shields.io/pub/v/universal_file.svg
+await InternetFile.get(
+    'https://github.com/rbcprolabs/icon_font_generator/raw/master/example/lib/icon_font/ui_icons.ttf',
+    storage: storageIO,
+    storageAdditional: {
+        'filename': 'ui_icons.ttf',
+        'location': '',
+    },
+);
+```
 
-[internet_file_pub]: https://pub.dev/packages/internet_file
-[internet_file_code]: https://github.com/rbcprolabs/packages.dart/tree/master/packages/internet_file
-[internet_file_badge]: https://img.shields.io/pub/v/internet_file.svg
+Or you can write you own storage not requires io (web support etc.):
+```dart
+class MyOwnInternetFileStorage extends InternetFileStorage {
+  @override
+  Future<Uint8List?> findExist(
+    String url,
+    InternetFileStorageAdditional additional,
+  ) {
+    # find local here
+
+    # access you own string property:
+    print(additional['my_string_property'] as String);
+
+    # access you own any type property:
+    print((additional['my_date_property'] as DateTime).toString())
+  }
+
+  @override
+  Future<void> save(
+    String url,
+    InternetFileStorageAdditional additional,
+    Uint8List bytes,
+  ) async {
+    # save file here
+  }
+}
+
+final myOwnStorage = MyOwnInternetFileStorage();
+await InternetFile.get(
+    'https://github.com/rbcprolabs/icon_font_generator/raw/master/example/lib/icon_font/ui_icons.ttf',
+    storage: myOwnStorage,
+    storageAdditional: {
+        'my_string_property': 'string',
+        'my_int_property': 99,
+        'my_date_property': DateTime.now(),
+    },
+);
+```
+## Api
+
+__InternetFile.get params__
+
+| Parameter         | Description                                                                          | Optional | Default |
+|-------------------|--------------------------------------------------------------------------------------|----------|---------|
+| url               | Link to network file                                                                 | required | -       |
+| headers           | Headers passed for wile load                                                         | optional | -       |
+| process           | Callback with percentage progress value called when file loads                       | optional | -       |
+| storage           | Implements of `InternetFileStorage` with save & find local methods for saving files  | optional | -       |
+| storageAdditional | Additional args for pass to `InternetFileStorage` implementation passed in `storage` | optional | {}      |
+
+Full api reference [available here](https://pub.dev/documentation/register/latest/)
+
+## Credits
+Inspired by [flutter_cache_manager](https://pub.dev/packages/flutter_cache_manager), but make for support all platforms
+
+Uses:
+* [http](https://pub.dev/packages/http) - for file loading from internet
+* [path](https://pub.dev/packages/path) - for filename & location joint in `InternetFileStorageIO`
+* [universal_file](https://pub.dev/packages/universal_file) - for work File in web
+
+Created for usage in:
+* [pdfx](https://pub.dev/packages/pdfx)
+* [native_pdf_renderer](https://pub.dev/packages/native_pdf_renderer)
+* [native_pdf_view](https://pub.dev/packages/native_pdf_renderer)
+* [epub_view](https://pub.dev/packages/epub_view)
