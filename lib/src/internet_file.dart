@@ -20,7 +20,7 @@ class InternetFile {
     if (headers != null) {
       request.headers.addAll(headers);
     }
-    final response = httpClient.send(request);
+    final response = httpClient.send(request).onError((error, stackTrace) => completer.completeError(error));
 
     List<List<int>> chunks = [];
     int downloaded = 0;
